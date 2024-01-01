@@ -53,13 +53,13 @@ class FLANKINGPROTOTYPE_API UFlankingSystem : public UBlueprintFunctionLibrary
 
 
 		UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
-		static void SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type);
+		static TArray<AActor*> SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type);
 
 		UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
-		static void SpawnNavArc(const FVector& PlayerLocation);
+		static TArray<AActor*> SpawnNavArc(const FVector& PlayerLocation);
 
 		UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
-		static void CleanUpNavArc();
+		static void CleanUpNavArc(TArray<AActor*> modifiersToDelete);
 
 		//UFUNCTION(BlueprintCallable, Category = "AI")
 		//static TArray<FVector> GetFlankPathToTarget(AAIController* AIController, const FTransform& TargetTransform);

@@ -20,7 +20,7 @@ void UFlankingSystem::MoveAIAlongPath(AAIController* AIController, const TArray<
 
 TArray<FVector> UFlankingSystem::GetFlankPathToLocation(AAIController* AIController, const FTransform& TargetTransform) {
     FVector Test_Vector_nav_arc_1(630.0, 580.0, 5.0f);
-    UFlankingSystem::SpawnNavArc(Test_Vector_nav_arc_1);
+    TArray<AActor*> spawnedModifiers = UFlankingSystem::SpawnNavArc(Test_Vector_nav_arc_1);
     UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(AIController->GetWorld());
     NavSys->Build();
     TArray<FVector> path;
@@ -46,6 +46,8 @@ TArray<FVector> UFlankingSystem::GetFlankPathToLocation(AAIController* AIControl
 
     
     UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetWorld(), flankerLocation, PlayerLocation, nullptr, MyFilterClass);
+    
+    //CleanUpNavArc(spawnedModifiers);
 
     if (NavPath && NavPath->IsValid())
     {
@@ -74,22 +76,27 @@ void UFlankingSystem::InitializeFlankNavModifierActorClasses()
 
 
 // Consider changing the argument passed in to be transform
-void UFlankingSystem::SpawnNavArc(const FVector& PlayerLocation) {
+TArray<AActor*> UFlankingSystem::SpawnNavArc(const FVector& PlayerLocation) {
     //UCustomMath::GetPointsOnArc
     static TArray<FArcPoint> ArcPoints = UCustomMath::GetPointsOnArc(PlayerLocation, 6, 110, 900);
     int i = 0;
+
+    TArray<AActor*> spawnedModifiers;
     
     for (FArcPoint& spot : ArcPoints) {
         int centralizedIndex = UCustomMath::GetCentralizedIndex(i, ArcPoints.Num());
         UE_LOG(LogTemp, Warning, TEXT("centralizedIndex: %d, Max: %d"), centralizedIndex, ArcPoints.Num());
         if (centralizedIndex < 0) centralizedIndex = 30;
         if (centralizedIndex > 30) centralizedIndex = 30;
-        SpawnLine(PlayerLocation, spot.Point, FText::AsNumber(centralizedIndex));
+        TArray<AActor*> newSpawnedModifiers = SpawnLine(PlayerLocation, spot.Point, FText::AsNumber(centralizedIndex));
+        spawnedModifiers.Append(newSpawnedModifiers);
         i++;
     }
+
+    return spawnedModifiers;
 }
 
-void UFlankingSystem::SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type) {
+TArray<AActor*> UFlankingSystem::SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type) {
     TArray<FVector> lineSpots = UCustomMath::CalculatePointsBetweenLocations(LocationA, LocationB, 150.0f);
     TArray<AActor*> spawnedModifiers;
     
@@ -97,6 +104,8 @@ void UFlankingSystem::SpawnLine(const FVector& LocationA, const FVector& Locatio
         AActor* spawnedModifier = SpawnFlankNavModifierActorAt(spot, type);
         spawnedModifiers.Add(spawnedModifier);
     }
+
+    return spawnedModifiers;
 }
 
 AActor* UFlankingSystem::SpawnFlankNavModifierActorAt(FVector location, FText type)
@@ -125,8 +134,17 @@ AActor* UFlankingSystem::SpawnFlankNavModifierActorAt(FVector location, FText ty
    return spawnedModifier;
 }
 
-void UFlankingSystem::CleanUpNavArc() {
-    
+void UFlankingSystem::CleanUpNavArc(TArray<AActor*> modifiersToDelete) {
+    for (AActor* modifier : modifiersToDelete)
+    {
+        if (modifier)
+        {
+            modifier->Destroy();
+        }
+    }
+
+    // Clear the array after deleting the actors
+    modifiersToDelete.Empty();
     
 }
 
