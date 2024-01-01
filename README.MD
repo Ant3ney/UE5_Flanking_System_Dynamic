@@ -1,0 +1,8 @@
+# Dynamic Flanking System in UE5
+
+Add node "AIFlankTo" to your Unreal Engine 5 project.
+This Node takes in an AI Controller and a target location then makes that AI Controller move to a location in a flanking / indirect path.
+
+This package also comes with a few helper functions that AIFlankTo uses under the hood so that you can modify the nodes functionality to your liking.
+
+In the future, much more configurability will be added.
