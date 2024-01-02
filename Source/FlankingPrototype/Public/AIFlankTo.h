@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "FlankingPrototype/Public/FlankingSystem.h"
 #include "AIFlankTo.generated.h"
 
 /**
@@ -40,10 +41,8 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
         static UAIFlankTo* selfRef;
     
         UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
-        static UAIFlankTo* AIFlankTo();
+        static UAIFlankTo* AIFlankTo(AAIController* AIController, const FTransform TargetTransform);
 
-        UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
-        static UAIFlankTo* MoveAIAlongPath2(AAIController* AIController, const TArray<FVector>& Path);
 
         UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
         static UAIFlankTo* MoveAIAlongPathAndReturnCallbackPointer(AAIController* AIController, const TArray<FVector> Path);

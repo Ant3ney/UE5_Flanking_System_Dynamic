@@ -11,11 +11,10 @@ UAIFlankTo::~UAIFlankTo() {
 }
     
 
-UAIFlankTo* UAIFlankTo::AIFlankTo()
+UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform TargetTransform)
 {
-    UAIFlankTo* MyAction = NewObject<UAIFlankTo>();
-    // Call the function library method with a callback
-    //UMyBlueprintFunctionLibrary::MyFunctionWithCallback(FMyBlueprintFunctionLibrary::FMyCallbackDelegate::CreateUObject(MyAction, &UMyAsyncAction::CallbackFunction));
+    TArray<FVector> path = UFlankingSystem::GetFlankPathToLocation(AIController, TargetTransform);
+    UAIFlankTo* MyAction = MoveAIAlongPathAndReturnCallbackPointer(AIController, path);
     return MyAction;
 }
 
@@ -34,7 +33,7 @@ UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* A
     selfRefObj2->max = Path.Num();
     selfRefObj2->AIControllerMem = AIController;
     selfRefObj2->pathMem = Path;
-    selfRefObj2->AddToRoot();
+    //selfRefObj2->AddToRoot();
     AIController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(selfRefObj2, &UAIFlankTo::Test);
 
     FVector& Point = selfRefObj2->pathMem[0];
@@ -45,43 +44,12 @@ UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* A
     return selfRefObj2;
 }
 
-UAIFlankTo* UAIFlankTo::MoveAIAlongPath2(AAIController* AIController, const TArray<FVector>& Path) {
-    //UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(AIController->GetWorld());
-    UAIFlankTo* selfRefObj = GetSelf();
-    UAIFlankTo* selfRefObj2 = NewObject<UAIFlankTo>();
 
-    selfRefObj2->max = Path.Num();
-
-    // Call the function library method with a callback
-    //UMyBlueprintFunctionLibrary::MyFunctionWithCallback(FMyBlueprintFunctionLibrary::FMyCallbackDelegate::CreateUObject(MyAction, &UMyAsyncAction::CallbackFunction));
-    //MyAction->AIControllerMem = AIController;
-    //MyAction->AIControllerMem->GetPathFollowingComponent()->OnRequestFinished.AddUObject(this, &UAIFlankTo::OnMoveCompleted);
-    //AIController->OnMoveCompleted.Bind(this, &UAIFlankTo::OnMoveCompletedMethod);
-    
-    
-    
-    
-    selfRefObj2->current = 0;
-    selfRefObj2->max = Path.Num();
-    selfRefObj2->AddToRoot();
-    AIController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(selfRefObj2, &UAIFlankTo::Test);
-
-
-
-
-
-    /*for (const FVector& Point : Path)
-    {
-        AIController->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
-    }*/
-
-    return selfRefObj2;
-}
 
 void UAIFlankTo::Test(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
     UAIFlankTo* selfRefObj = this;
-    selfRefObj->AddToRoot();
+    //selfRefObj->AddToRoot();
     
     int currentPath = selfRefObj->current;
     int maxPaths = selfRefObj->max;
