@@ -47,6 +47,9 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
         UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
         static UAIFlankTo* MoveAIAlongPathAndReturnCallbackPointer(AAIController* AIController, const TArray<FVector> Path);
 
+        UFUNCTION(BlueprintCallable, Category = "AI")
+        static TArray<FVector> GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform);
+
         DECLARE_DELEGATE_TwoParams(FOnMoveCompletedDelegate, FAIRequestID RequestID, const FPathFollowingResult& Result);
         //void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result);
         FOnMoveCompletedDelegate OnMoveCompleted;
@@ -55,6 +58,18 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
         //void OnMoveCompletedMethod(FAIRequestID RequestID, const FPathFollowingResult& Result);
 
         void Test(FAIRequestID RequestID, const FPathFollowingResult& Result);
+
+        UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
+        static AActor* SpawnFlankNavModifierActorAt(FVector location, FText type);
+
+        UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
+        static TArray<AActor*> SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type);
+
+        UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
+        static TArray<AActor*> SpawnNavArc(const FVector& PlayerLocation);
+
+        UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
+        static void CleanUpNavArc(TArray<AActor*> modifiersToDelete);
 
     
     private:
