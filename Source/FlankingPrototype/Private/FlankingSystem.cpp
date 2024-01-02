@@ -18,17 +18,11 @@ void UFlankingSystem::MoveAIAlongPath(AAIController* AIController, const TArray<
 }
 
 
-TArray<FVector> UFlankingSystem::GetFlankPathToLocation(AAIController* AIController, const FTransform& TargetTransform) {
-    FVector Test_Vector_nav_arc_1(630.0, 580.0, 5.0f);
-    TArray<AActor*> spawnedModifiers = UFlankingSystem::SpawnNavArc(Test_Vector_nav_arc_1);
+TArray<FVector> UFlankingSystem::GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform) {
+    FVector targetLocation = TargetTransform.GetLocation();
+    TArray<AActor*> spawnedModifiers = UFlankingSystem::SpawnNavArc(targetLocation);
     UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(AIController->GetWorld());
     NavSys->Build();
-    TArray<FVector> path;
-    // Correctly access the location from the TargetTransform
-    FVector targetLocation = TargetTransform.GetLocation();
-    path.Add(targetLocation);
-    
-    //ConstructorHelpers::FObjectFinder<UNavigationQueryFilter> QueryFilterFinder(TEXT("/Game/FlankingNavClasses/Flank_Query_Filter.Flank_Query_Filter_C"));
     FText queryFilterPath = FText::FromString(TEXT("/Game/FlankingNavClasses/Flank_Query_Filter.Flank_Query_Filter_C"));
     FString queryFilterPathFString = queryFilterPath.ToString();
 
@@ -39,28 +33,22 @@ TArray<FVector> UFlankingSystem::GetFlankPathToLocation(AAIController* AIControl
     
     TSubclassOf<UNavigationQueryFilter> MyFilterClass = MyQueryFilter->GetClass();
 
-    
-    FVector flankerLocation(1500.0, 1960.0, 5.0f);
+    FVector flankerLocation = AIController->GetPawn()->GetActorLocation();
     FVector PlayerLocation(630.0, 540.0, 5.0f);
-    TArray<FVector> path2;
+    TArray<FVector> path;
 
     
-    UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetWorld(), flankerLocation, PlayerLocation, nullptr, MyFilterClass);
+    UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetWorld(), flankerLocation, targetLocation, nullptr, MyFilterClass);
     
-    //CleanUpNavArc(spawnedModifiers);
+    CleanUpNavArc(spawnedModifiers);
+    NavSys->Build();
 
     if (NavPath && NavPath->IsValid())
     {
-        path2 = NavPath->PathPoints;
+        path = NavPath->PathPoints;
     }
-    else
-    {
-        // Handle the case where the path is not found or invalid
-    }
-    
 
-
-    return path2;
+    return path;
 }
 
 

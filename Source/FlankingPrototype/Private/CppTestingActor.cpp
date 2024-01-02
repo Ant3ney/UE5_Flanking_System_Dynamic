@@ -15,7 +15,7 @@ ACppTestingActor::ACppTestingActor()
 void ACppTestingActor::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogTemp, Warning, TEXT("UCustomMath::GetCentralizedIndex(1, 5): %d"), UCustomMath::GetCentralizedIndex(1, 5));
+	//UE_LOG(LogTemp, Warning, TEXT("UCustomMath::GetCentralizedIndex(1, 5): %d"), UCustomMath::GetCentralizedIndex(1, 5));
 	FVector Test_Vector_0(1020.0f, 260.0f, 5.0f);
 	FVector Test_Vector_1(1010.0, 120.0, 5.0f);
 	FVector Test_Vector_2(1510.0, 540.0, 5.0f);

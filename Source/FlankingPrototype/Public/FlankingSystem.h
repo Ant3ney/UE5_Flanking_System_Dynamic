@@ -65,7 +65,7 @@ class FLANKINGPROTOTYPE_API UFlankingSystem : public UBlueprintFunctionLibrary
 		//static TArray<FVector> GetFlankPathToTarget(AAIController* AIController, const FTransform& TargetTransform);
 
 		UFUNCTION(BlueprintCallable, Category = "AI")
-		static TArray<FVector> GetFlankPathToLocation(AAIController* AIController, const FTransform& TargetTransform);
+		static TArray<FVector> GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform);
 
 		//UFUNCTION(BlueprintCallable, Category = "AI")
 		//static void GetFlankPathToLocation(int test, const FTransform& TargetTransform);

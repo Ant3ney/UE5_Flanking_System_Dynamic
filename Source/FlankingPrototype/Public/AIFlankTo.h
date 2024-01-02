@@ -26,6 +26,9 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
         UPROPERTY()
         int max;
 
+        UPROPERTY()
+        TArray<FVector> pathMem;
+
         UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "MyCategory")
         static UAIFlankTo* GetSelf();
 
@@ -43,7 +46,7 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
         static UAIFlankTo* MoveAIAlongPath2(AAIController* AIController, const TArray<FVector>& Path);
 
         UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
-        static UAIFlankTo* MoveAIAlongPathAndReturnCallbackPointer(AAIController* AIController, const TArray<FVector>& Path);
+        static UAIFlankTo* MoveAIAlongPathAndReturnCallbackPointer(AAIController* AIController, const TArray<FVector> Path);
 
         DECLARE_DELEGATE_TwoParams(FOnMoveCompletedDelegate, FAIRequestID RequestID, const FPathFollowingResult& Result);
         //void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result);
