@@ -73,6 +73,9 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
 
         UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
         static void CleanUpNavArc(TArray<AActor*> modifiersToDelete);
+
+        UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
+        static AActor* CreateFlankNavModifierActor();
     
     private:
         void CallbackFunction();

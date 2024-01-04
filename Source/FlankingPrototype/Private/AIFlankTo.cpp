@@ -224,12 +224,16 @@ AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, U
     FText Testing = FText::FromString(TEXT("/Game/FlankingNavClasses/NavModifierActors/Flank_Nav_Modifier_Actor_0.Flank_Nav_Modifier_Actor_0_C"));
     FString classPath = Part1.ToString() + Part2.ToString() + Part3.ToString() + Part2.ToString() + Part4.ToString();
 
-    if (instanceRef->areas.Num() <= 0) {
-        instanceRef->areas.Init(nullptr, 31);
-    }
-
     UNavArea* newArea = NewObject<UNavArea>();
-    instanceRef->areas[typeInt] = newArea;
+    if (instanceRef != nullptr) {
+        UE_LOG(LogTemp, Warning, TEXT("instanceRef is not null!"));
+        if (instanceRef->areas.Num() <= 0) {
+            instanceRef->areas.Init(nullptr, 31);
+            instanceRef->areas[typeInt] = newArea;
+        }
+    }
+    
+    
 
 
     UClass* MyActorClass = LoadClass<AActor>(nullptr, *classPath);
@@ -240,6 +244,12 @@ AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, U
     spawnedModifier = World->SpawnActor<AActor>(MyActorClass, Location, Rotation, SpawnParams);
 
     return spawnedModifier;
+}
+
+AActor* UAIFlankTo::CreateFlankNavModifierActor() {
+    AActor* NewActor = NewObject<AActor>();
+
+    return NewActor;
 }
 
 TArray<AActor*> UAIFlankTo::SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type, UDataTable* DataTable, UAIFlankTo* instanceRef) {
