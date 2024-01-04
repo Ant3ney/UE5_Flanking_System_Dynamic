@@ -11,17 +11,24 @@ struct FFlankingSystemSettingsRow : public FTableRowBase
 
 public:
     FFlankingSystemSettingsRow()
-        : MyInt(0), MyBool(false), AdditionalInts()
+        : autoDecrimentStart(2000), autoDecrimentAmmount(50), autoDecriment(true), manualCosts()
     {
-        AdditionalInts.Init(0, 30); // Initialize 30 integers with a value of 0
+        manualCosts.Init(0, 31); // Initialize 30 integers with a value of 0
+        int32 max = manualCosts.Num();
+        for (int32 i = 0; i < max; i++) {
+            manualCosts[i] = autoDecrimentStart - (i * autoDecrimentAmmount);
+        }
     }
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        int32 autoDecrimentStart;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        int32 MyInt;
+        int32 autoDecrimentAmmount;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        bool MyBool;
+        bool autoDecriment;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        TArray<int32> AdditionalInts;
+        TArray<int32> manualCosts;
 };

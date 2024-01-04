@@ -75,6 +75,9 @@ TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, 
         path = NavPath->PathPoints;
     }
 
+    UE_LOG(LogTemp, Warning, TEXT("Playe Position: %s"), *targetLocation.ToString());
+    UE_LOG(LogTemp, Warning, TEXT("Last point: %s"), *path[path.Num() - 1].ToString());
+
     return path;
 }
 
@@ -89,16 +92,27 @@ void UAIFlankTo::Test(FAIRequestID RequestID, const FPathFollowingResult& Result
     int maxPaths = selfRefObj->max;
     selfRefObj->current = currentPath + 1;
     // Implementation of your method
-    UE_LOG(LogTemp, Warning, TEXT("current index: %d, maxPaths: %d, numPaths left: %d"), currentPath, maxPaths, selfRefObj->pathMem.Num());
-    
-    if (!currentPath || !maxPaths) {
-        UE_LOG(LogTemp, Warning, TEXT("Got undefineds, %d, %d, %d"), currentPath, maxPaths, (currentPath + 1));
+
+    TArray<FVector> path = selfRefObj->pathMem;
+
+    if (!(selfRefObj->pathMem.Num() <= 0)) {
+        UE_LOG(LogTemp, Warning, TEXT("Last point obzerved: %s"), *path[path.Num() - 1].ToString());
+
     }
-    //
+    
+
     if (selfRefObj->pathMem.Num() > 0 && selfRefObj->current <= selfRefObj->max) {
         FVector& Point = selfRefObj->pathMem[0];
         selfRefObj->pathMem.RemoveAt(0);
-        UE_LOG(LogTemp, Warning, TEXT("Moveing to <%f, %f, %f"), Point.X, Point.Y, Point.Z);
+        bool isLast = selfRefObj->current + 1 == selfRefObj->max;
+        bool currentPathEqualsLastPath = Point.Equals(path[path.Num() - 1], 1.0f);
+
+        if (isLast && !currentPathEqualsLastPath) { // Wants to move to bug point! Abort!
+            selfRefObj->OnFinished.Broadcast();
+            return;
+        }
+
+        UE_LOG(LogTemp, Warning, TEXT("Moveing to <%f, %f, %f>"), Point.X, Point.Y, Point.Z);
         if (selfRefObj !=  nullptr) {
             if (selfRefObj->AIControllerMem != nullptr) {       
                 EPathFollowingRequestResult::Type MoveResult = selfRefObj->AIControllerMem->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
@@ -124,24 +138,15 @@ void UAIFlankTo::Test(FAIRequestID RequestID, const FPathFollowingResult& Result
             }
         }
         
-        
-        
     }
     else if(selfRefObj->pathMem.Num() <= 0) {
         //OnFinished.Broadcast();
 
         //selfRefObjStatic->OnFinished.Broadcast();
         selfRefObj->OnFinished.Broadcast();
-        UE_LOG(LogTemp, Warning, TEXT("Another confermation needed, %d, %d, %d"), currentPath, maxPaths, selfRefObj->pathMem.Num());
 
     }
-    //
-    //
-    //
-    //if (maxPaths <= (currentPath + 1))
-    //{
-    //    
-    //}
+
 }
 
 //void UAIFlankTo::OnMoveCompletedMethod(FAIRequestID RequestID, const FPathFollowingResult& Result)
@@ -154,7 +159,6 @@ UAIFlankTo* UAIFlankTo::GetSelf()
     UAIFlankTo* selfRefObj = UAIFlankTo::selfRef;
     if (selfRefObj == nullptr)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Made a new 1 time instance."))
         selfRefObj = NewObject<UAIFlankTo>();
 
         //Preventing garbage collection makes game not crash for some reason.
@@ -167,7 +171,7 @@ UAIFlankTo* UAIFlankTo::GetSelf()
     return selfRefObj;
 }
 
-AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type)
+AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, UDataTable* DataTable = nullptr)
 {
     FVector Location(location.X, location.Y, 5);
     FRotator Rotation(0.0f, 0.0f, 0.0f);
@@ -178,13 +182,12 @@ AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type)
     FText Part2 = type;
     FText Part3 = FText::FromString(TEXT(".Flank_Nav_Modifier_Actor_"));
     FText Part4 = FText::FromString(TEXT("_C"));
-
     FText Testing = FText::FromString(TEXT("/Game/FlankingNavClasses/NavModifierActors/Flank_Nav_Modifier_Actor_0.Flank_Nav_Modifier_Actor_0_C"));
 
     FString classPath = Part1.ToString() + Part2.ToString() + Part3.ToString() + Part2.ToString() + Part4.ToString();
 
-    //UClass* MyActorClass = LoadClass<AActor>(nullptr, *classPath);
-    UClass* MyActorClass = LoadClass<AActor>(nullptr, *Testing.ToString());
+    UClass* MyActorClass = LoadClass<AActor>(nullptr, *classPath);
+    //UClass* MyActorClass = LoadClass<AActor>(nullptr, *Testing.ToString());
 
     AActor* spawnedModifier = nullptr;
 
@@ -214,7 +217,6 @@ TArray<AActor*> UAIFlankTo::SpawnNavArc(const FVector& PlayerLocation) {
 
     for (FArcPoint& spot : ArcPoints) {
         int centralizedIndex = UCustomMath::GetCentralizedIndex(i, ArcPoints.Num());
-        UE_LOG(LogTemp, Warning, TEXT("centralizedIndex: %d, Max: %d"), centralizedIndex, ArcPoints.Num());
         if (centralizedIndex < 0) centralizedIndex = 30;
         if (centralizedIndex > 30) centralizedIndex = 30;
         TArray<AActor*> newSpawnedModifiers = SpawnLine(PlayerLocation, spot.Point, FText::AsNumber(centralizedIndex));

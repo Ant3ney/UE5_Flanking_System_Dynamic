@@ -7,6 +7,7 @@
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "FlankingPrototype/Public/FlankingSystem.h"
+#include "Engine/DataTable.h"
 #include "AIFlankTo.generated.h"
 
 /**
@@ -60,7 +61,7 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
         void Test(FAIRequestID RequestID, const FPathFollowingResult& Result);
 
         UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
-        static AActor* SpawnFlankNavModifierActorAt(FVector location, FText type);
+        static AActor* SpawnFlankNavModifierActorAt(FVector location, FText type, UDataTable* DataTable);
 
         UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
         static TArray<AActor*> SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type);
