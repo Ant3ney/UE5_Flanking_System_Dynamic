@@ -11,10 +11,14 @@ UAIFlankTo::~UAIFlankTo() {
 }
     
 
-UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform TargetTransform)
+UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform TargetTransform, UDataTable* DataTable)
 {
     TArray<FVector> path = GetFlankPathToLocation(AIController, TargetTransform);
     UAIFlankTo* MyAction = MoveAIAlongPathAndReturnCallbackPointer(AIController, path);
+    if (!DataTable)
+    {
+        DataTable = NewObject<UDataTable>();
+    }
     return MyAction;
 }
 
@@ -24,7 +28,11 @@ void UAIFlankTo::CallbackFunction()
     OnFinished.Broadcast();
 }
 
-UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* AIController, const TArray<FVector> Path) {
+UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* AIController, const TArray<FVector> Path, UDataTable* DataTable, UAIFlankTo* instanceRef) {
+    if (!DataTable)
+    {
+        DataTable = NewObject<UDataTable>();
+    }
     UAIFlankTo* selfRefObj2 = NewObject<UAIFlankTo>();
 
     selfRefObj2->max = Path.Num();
@@ -35,7 +43,7 @@ UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* A
     selfRefObj2->pathMem = Path;
 
 
-    AIController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(selfRefObj2, &UAIFlankTo::Test);
+    AIController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(selfRefObj2, &UAIFlankTo::OnReachedPathPoint);
 
     FVector& Point = selfRefObj2->pathMem[0];
     selfRefObj2->AIControllerMem->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
@@ -45,7 +53,11 @@ UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* A
     return selfRefObj2;
 }
 
-TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform) {
+TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform, UDataTable* DataTable, UAIFlankTo* instanceRef) {
+    if (!DataTable)
+    {
+        DataTable = NewObject<UDataTable>();
+    }
     FVector targetLocation = TargetTransform.GetLocation();
     TArray<AActor*> spawnedModifiers = SpawnNavArc(targetLocation);
     UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(AIController->GetWorld());
@@ -83,7 +95,7 @@ TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, 
 
 
 
-void UAIFlankTo::Test(FAIRequestID RequestID, const FPathFollowingResult& Result)
+void UAIFlankTo::OnReachedPathPoint(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
     UAIFlankTo* selfRefObj = this;
     //selfRefObj->AddToRoot();
@@ -106,13 +118,34 @@ void UAIFlankTo::Test(FAIRequestID RequestID, const FPathFollowingResult& Result
         selfRefObj->pathMem.RemoveAt(0);
         bool isLast = selfRefObj->current + 1 == selfRefObj->max;
         bool currentPathEqualsLastPath = Point.Equals(path[path.Num() - 1], 1.0f);
+        bool isPointValid = FlankingSystemUtilities::IsVectorInArray(Point, selfRefObj->pathMem);
 
-        if (isLast && !currentPathEqualsLastPath) { // Wants to move to bug point! Abort!
-            selfRefObj->OnFinished.Broadcast();
-            return;
+        if (!isPointValid) { // Wants to move to bug point! Abort!
+
+            if(isLast){
+                selfRefObj->OnFinished.Broadcast();
+                return;
+            }
+            else {
+                // TODO: Look over this else block and ensure it will work when called.
+                int localIndex = 1;
+                while (!isLast && !isPointValid) {
+                    Point = selfRefObj->pathMem[localIndex];
+                    selfRefObj->pathMem.RemoveAt(0);
+                    currentPath = selfRefObj->current;
+                    selfRefObj->current = currentPath + 1;
+                    isLast = selfRefObj->current + 1 == selfRefObj->max;
+                    isPointValid = FlankingSystemUtilities::IsVectorInArray(Point, selfRefObj->pathMem);
+                    localIndex++;
+                }
+                if (isLast && !isPointValid) {
+                    selfRefObj->OnFinished.Broadcast();
+                    return;
+                }
+            }
         }
 
-        UE_LOG(LogTemp, Warning, TEXT("Moveing to <%f, %f, %f>"), Point.X, Point.Y, Point.Z);
+        UE_LOG(LogTemp, Warning, TEXT("Moving to <%f, %f, %f>"), Point.X, Point.Y, Point.Z);
         if (selfRefObj !=  nullptr) {
             if (selfRefObj->AIControllerMem != nullptr) {       
                 EPathFollowingRequestResult::Type MoveResult = selfRefObj->AIControllerMem->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
@@ -171,20 +204,33 @@ UAIFlankTo* UAIFlankTo::GetSelf()
     return selfRefObj;
 }
 
-AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, UDataTable* DataTable = nullptr)
+AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, UDataTable* DataTable, UAIFlankTo* instanceRef)
 {
+    if (!DataTable)
+    {
+        DataTable = NewObject<UDataTable>();
+    }
     FVector Location(location.X, location.Y, 5);
     FRotator Rotation(0.0f, 0.0f, 0.0f);
     UWorld* World = GEngine->GetWorldFromContextObjectChecked(GEngine->GameViewport);
     FActorSpawnParameters SpawnParams;
+    FString typeString = type.ToString();
+    int typeInt = FCString::Atoi(*typeString);
 
     FText Part1 = FText::FromString(TEXT("/Game/FlankingNavClasses/NavModifierActors/Flank_Nav_Modifier_Actor_"));
     FText Part2 = type;
     FText Part3 = FText::FromString(TEXT(".Flank_Nav_Modifier_Actor_"));
     FText Part4 = FText::FromString(TEXT("_C"));
     FText Testing = FText::FromString(TEXT("/Game/FlankingNavClasses/NavModifierActors/Flank_Nav_Modifier_Actor_0.Flank_Nav_Modifier_Actor_0_C"));
-
     FString classPath = Part1.ToString() + Part2.ToString() + Part3.ToString() + Part2.ToString() + Part4.ToString();
+
+    if (instanceRef->areas.Num() <= 0) {
+        instanceRef->areas.Init(nullptr, 31);
+    }
+
+    UNavArea* newArea = NewObject<UNavArea>();
+    instanceRef->areas[typeInt] = newArea;
+
 
     UClass* MyActorClass = LoadClass<AActor>(nullptr, *classPath);
     //UClass* MyActorClass = LoadClass<AActor>(nullptr, *Testing.ToString());
@@ -196,7 +242,11 @@ AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, U
     return spawnedModifier;
 }
 
-TArray<AActor*> UAIFlankTo::SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type) {
+TArray<AActor*> UAIFlankTo::SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type, UDataTable* DataTable, UAIFlankTo* instanceRef) {
+    if (!DataTable)
+    {
+        DataTable = NewObject<UDataTable>();
+    }
     TArray<FVector> lineSpots = UCustomMath::CalculatePointsBetweenLocations(LocationA, LocationB, 150.0f);
     TArray<AActor*> spawnedModifiers;
 
@@ -208,7 +258,11 @@ TArray<AActor*> UAIFlankTo::SpawnLine(const FVector& LocationA, const FVector& L
     return spawnedModifiers;
 }
 
-TArray<AActor*> UAIFlankTo::SpawnNavArc(const FVector& PlayerLocation) {
+TArray<AActor*> UAIFlankTo::SpawnNavArc(const FVector& PlayerLocation, UDataTable* DataTable, UAIFlankTo* instanceRef) {
+    if (!DataTable)
+    {
+        DataTable = NewObject<UDataTable>();
+    }
     //UCustomMath::GetPointsOnArc
     static TArray<FArcPoint> ArcPoints = UCustomMath::GetPointsOnArc(PlayerLocation, 6, 110, 900);
     int i = 0;
