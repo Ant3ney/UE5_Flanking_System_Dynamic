@@ -12,6 +12,11 @@
 				"Engine",
 				"NavigationSystem"
 			]
+		},
+		{
+			"Name": "FlankingPrototypeEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit"			
 		}
 	],
 	"Plugins": [

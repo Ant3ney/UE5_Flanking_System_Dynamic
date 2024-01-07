@@ -8,8 +8,11 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "FlankingPrototype/Public/FlankingSystem.h"
 #include "FlankingPrototype/Public/FlankingSystemUtilities.h"
+#include "FlankingPrototype/Public/FlankQueryFilterHighCost.h"
 #include "Engine/DataTable.h"
 #include "NavAreas/NavArea.h"
+#include "NavModifierComponent.h"
+#include "Components/BoxComponent.h"
 #include "AIFlankTo.generated.h"
 
 /**
@@ -82,5 +85,5 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
 
         AAIController* AIControllerMem;
 
-        TArray<UNavArea*> areas;
+        TArray<AActor*> NavModifierActors;
 };

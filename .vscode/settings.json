@@ -1,3 +1,6 @@
 {
-  "cSpell.words": ["configurabality", "configurability"]
+  "cSpell.words": ["configurabality", "configurability"],
+  "files.associations": {
+    "*.rh": "cpp"
+  }
 }

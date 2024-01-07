@@ -10,6 +10,6 @@ public class FlankingPrototypeEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 
-		ExtraModuleNames.AddRange( new string[] { "FlankingPrototype" } );
+		ExtraModuleNames.AddRange(new string[] { "FlankingPrototype", "FlankingPrototypeEditor" });
 	}
 }

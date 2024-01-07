@@ -35,6 +35,7 @@
 #include "FlankingPrototype/NavClasses/FlankArea29.h"
 #include "FlankingPrototype/NavClasses/FlankArea30.h"
 #include "FlankingPrototype/NavClasses/FlankQueryFilter.h"
+#include "NavAreas/NavArea.h"
 
 /**
  * 
@@ -44,4 +45,8 @@ class FLANKINGPROTOTYPE_API NavClassAccessor
 public:
 	NavClassAccessor();
 	~NavClassAccessor();
+
+	static TArray<TSubclassOf<UNavArea>> GetFlankAreaClasses();
+
+	static UFlankQueryFilter* GetFlankQueryFilter();
 };

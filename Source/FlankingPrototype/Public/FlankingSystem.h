@@ -12,6 +12,7 @@
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
+#include "FlankingPrototype/Public/FlankNavModifierActor0.h"
 #include "FlankingSystem.generated.h"
 
 /**

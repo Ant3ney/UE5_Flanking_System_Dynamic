@@ -10,6 +10,6 @@ public class FlankingPrototypeTarget : TargetRules
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 
-		ExtraModuleNames.AddRange( new string[] { "FlankingPrototype" } );
+		ExtraModuleNames.AddRange( new string[] { "FlankingPrototype", "SetCustomNavQueryFilter2" } );
 	}
 }

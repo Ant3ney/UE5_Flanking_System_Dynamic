@@ -2,21 +2,21 @@
 
 using UnrealBuildTool;
 
-public class FlankingPrototype : ModuleRules
+public class FlankingPrototypeEditor : ModuleRules
 {
-	public FlankingPrototype(ReadOnlyTargetRules Target) : base(Target)
+	public FlankingPrototypeEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "EditorStyle" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "EditorStyle", "FlankingPrototype", "HotReload" });
 
-		PublicIncludePaths.AddRange(
-			new string[] {
-				"FlankingPrototype/NavClasses"
-			}
-		);
+		PrivateDependencyModuleNames.AddRange(new string[] { });
+
+		//PublicIncludePaths.AddRange(
+		//	new string[] {
+		//		"FlankingPrototype/NavClasses"
+		//	}
+		//);
 
 		//Uncomment if you are using Slate UI
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
