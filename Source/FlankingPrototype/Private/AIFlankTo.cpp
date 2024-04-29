@@ -11,14 +11,11 @@ UAIFlankTo::~UAIFlankTo() {
 }
     
 
-UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform TargetTransform, UDataTable* DataTable)
+UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform TargetTransform)
 {
     TArray<FVector> path = GetFlankPathToLocation(AIController, TargetTransform);
     UAIFlankTo* MyAction = MoveAIAlongPathAndReturnCallbackPointer(AIController, path);
-    if (!DataTable)
-    {
-        DataTable = NewObject<UDataTable>();
-    }
+
     return MyAction;
 }
 
@@ -33,6 +30,7 @@ UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* A
     {
         DataTable = NewObject<UDataTable>();
     }
+
     UAIFlankTo* selfRefObj2 = NewObject<UAIFlankTo>();
 
     selfRefObj2->max = Path.Num();
@@ -41,7 +39,6 @@ UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* A
     selfRefObj2->max = Path.Num();
     selfRefObj2->AIControllerMem = AIController;
     selfRefObj2->pathMem = Path;
-
 
     AIController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(selfRefObj2, &UAIFlankTo::OnReachedPathPoint);
 
@@ -58,39 +55,28 @@ TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, 
     {
         DataTable = NewObject<UDataTable>();
     }
+
     FVector targetLocation = TargetTransform.GetLocation();
     TArray<AActor*> spawnedModifiers = SpawnNavArc(targetLocation);
+
     UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(AIController->GetWorld());
     NavSys->Build();
-    FText queryFilterPath = FText::FromString(TEXT("/Game/FlankingNavClasses/Flank_Query_Filter.Flank_Query_Filter_C"));
-    FString queryFilterPathFString = queryFilterPath.ToString();
 
-    UClass* QueryFilterFinder = LoadClass<UNavigationQueryFilter>(nullptr, *queryFilterPathFString);
-
-    UNavigationQueryFilter* MyQueryFilter = nullptr;//QueryFilterFinder.Object;
-    MyQueryFilter = NewObject<UNavigationQueryFilter>((UObject*)GetTransientPackage(), QueryFilterFinder);
-
-    TSubclassOf<UNavigationQueryFilter> MyFilterClass = MyQueryFilter->GetClass();
     TSubclassOf<UNavigationQueryFilter> newFilterClass = UFlankQueryFilterHighCost::StaticClass();
 
     FVector flankerLocation = AIController->GetPawn()->GetActorLocation();
     FVector PlayerLocation(630.0, 540.0, 5.0f);
     TArray<FVector> path;
 
-
-    //UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetWorld(), flankerLocation, targetLocation, nullptr, MyFilterClass);
     UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetWorld(), flankerLocation, targetLocation, nullptr, newFilterClass);
 
-    //CleanUpNavArc(spawnedModifiers);
-    //NavSys->Build();
+    CleanUpNavArc(spawnedModifiers);
+    NavSys->Build();
 
     if (NavPath && NavPath->IsValid())
     {
         path = NavPath->PathPoints;
     }
-
-    UE_LOG(LogTemp, Warning, TEXT("Playe Position: %s"), *targetLocation.ToString());
-    UE_LOG(LogTemp, Warning, TEXT("Last point: %s"), *path[path.Num() - 1].ToString());
 
     return path;
 }
@@ -212,49 +198,16 @@ AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, U
     {
         DataTable = NewObject<UDataTable>();
     }
+
     FVector Location(location.X, location.Y, 5);
     FRotator Rotation(0.0f, 0.0f, 0.0f);
     UWorld* World = GEngine->GetWorldFromContextObjectChecked(GEngine->GameViewport);
     FActorSpawnParameters SpawnParams;
     FString typeString = type.ToString();
-    int typeInt = FCString::Atoi(*typeString);
-
-    FText Part1 = FText::FromString(TEXT("/Game/FlankingNavClasses/NavModifierActors/Flank_Nav_Modifier_Actor_"));
-    FText Part2 = type;
-    FText Part3 = FText::FromString(TEXT(".Flank_Nav_Modifier_Actor_"));
-    FText Part4 = FText::FromString(TEXT("_C"));
-    FText Testing = FText::FromString(TEXT("/Game/FlankingNavClasses/NavModifierActors/Flank_Nav_Modifier_Actor_0.Flank_Nav_Modifier_Actor_0_C"));
-    FString classPath = Part1.ToString() + Part2.ToString() + Part3.ToString() + Part2.ToString() + Part4.ToString();
-
-    
-
-    //UNavArea* newArea = NewObject<UNavArea>();
-    if (instanceRef != nullptr) {
-        //UE_LOG(LogTemp, Warning, TEXT("instanceRef is not null!"));
-        //if (instanceRef->areas.Num() <= 0) {
-        //    instanceRef->areas.Init(nullptr, 31);
-        //    instanceRef->areas[typeInt] = newArea;
-        //}
-    }
-
-    //UE_LOG(LogTemp, Log, TEXT("Spawn nav actor: %d"), typeInt);
-    
-    //AActor* FlankNavModifierActor = World->SpawnActor<AActor>(Location, Rotation, SpawnParams);
-    //UNavModifierComponent* NavModifierComponent = NewObject<UNavModifierComponent>(FlankNavModifierActor, UNavModifierComponent::StaticClass());
-
-
-    UClass* MyActorClass = LoadClass<AActor>(nullptr, *classPath);
-
-
-    //UClass* MyActorClass = LoadClass<AActor>(nullptr, *Testing.ToString());
 
     AActor* spawnedModifier = nullptr;
-
-    //spawnedModifier = World->SpawnActor<AActor>(MyActorClass, Location, Rotation, SpawnParams);
-
     UClass* AFlankNavModifierActor0Class = AFlankNavModifierActor0::StaticClass();
     spawnedModifier = World->SpawnActor<AFlankNavModifierActor0>(AFlankNavModifierActor0Class, Location, Rotation, SpawnParams);
-
 
     return spawnedModifier;
 }
@@ -270,6 +223,7 @@ TArray<AActor*> UAIFlankTo::SpawnLine(const FVector& LocationA, const FVector& L
     {
         DataTable = NewObject<UDataTable>();
     }
+
     TArray<FVector> lineSpots = UCustomMath::CalculatePointsBetweenLocations(LocationA, LocationB, 150.0f);
     TArray<AActor*> spawnedModifiers;
 
@@ -286,14 +240,12 @@ TArray<AActor*> UAIFlankTo::SpawnNavArc(const FVector& PlayerLocation, UDataTabl
     {
         DataTable = NewObject<UDataTable>();
     }
-    //UCustomMath::GetPointsOnArc
-    static TArray<FArcPoint> ArcPoints = UCustomMath::GetPointsOnArc(PlayerLocation, 6, 110, 900);
-    int i = 0;
 
+    static TArray<FArcPoint> ArcPoints = UCustomMath::GetPointsOnArc(PlayerLocation, 6, 110, 900);
+    
     TArray<AActor*> spawnedModifiers;
 
-    
-
+    int i = 0;
     for (FArcPoint& spot : ArcPoints) {
         int centralizedIndex = UCustomMath::GetCentralizedIndex(i, ArcPoints.Num());
         if (centralizedIndex < 0) centralizedIndex = 30;

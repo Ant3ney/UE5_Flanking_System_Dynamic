@@ -47,7 +47,7 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
         static UAIFlankTo* selfRef;
     
         UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
-        static UAIFlankTo* AIFlankTo(AAIController* AIController, const FTransform TargetTransform, UDataTable* DataTable = nullptr);
+        static UAIFlankTo* AIFlankTo(AAIController* AIController, const FTransform TargetTransform);
 
 
         UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
