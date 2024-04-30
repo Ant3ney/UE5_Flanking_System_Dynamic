@@ -19,34 +19,27 @@ UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform 
     return MyAction;
 }
 
-void UAIFlankTo::CallbackFunction()
-{
-    OnFinished.Broadcast();
-}
-
 UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* AIController, const TArray<FVector> Path, UDataTable* DataTable, UAIFlankTo* instanceRef) {
     if (!DataTable)
     {
         DataTable = NewObject<UDataTable>();
     }
 
-    UAIFlankTo* selfRefObj2 = NewObject<UAIFlankTo>();
+    UAIFlankTo* self = NewObject<UAIFlankTo>();
+    self->max = Path.Num();
+    self->current = 0;
+    self->max = Path.Num();
+    self->AIControllerMem = AIController;
+    self->pathMem = Path;
+    FVector& Point = self->pathMem[0];
 
-    selfRefObj2->max = Path.Num();
+    AIController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(self, &UAIFlankTo::OnReachedPathPoint);
+    
+    self->AIControllerMem->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
+    if(self->pathMem.Num() > 0)
+        self->pathMem.RemoveAt(0);
 
-    selfRefObj2->current = 0;
-    selfRefObj2->max = Path.Num();
-    selfRefObj2->AIControllerMem = AIController;
-    selfRefObj2->pathMem = Path;
-
-    AIController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(selfRefObj2, &UAIFlankTo::OnReachedPathPoint);
-
-    FVector& Point = selfRefObj2->pathMem[0];
-    selfRefObj2->AIControllerMem->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
-    if(selfRefObj2->pathMem.Num() > 0)
-        selfRefObj2->pathMem.RemoveAt(0);
-
-    return selfRefObj2;
+    return self;
 }
 
 TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform, UDataTable* DataTable, UAIFlankTo* instanceRef) {
@@ -56,19 +49,14 @@ TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, 
     }
 
     FVector targetLocation = TargetTransform.GetLocation();
-    TArray<AActor*> spawnedModifiers = SpawnNavArc(targetLocation);
-
     UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(AIController->GetWorld());
-    NavSys->Build();
-
     TSubclassOf<UNavigationQueryFilter> newFilterClass = UFlankQueryFilterHighCost::StaticClass();
-
+    TArray<AActor*> spawnedModifiers = SpawnNavArc(targetLocation);
     FVector flankerLocation = AIController->GetPawn()->GetActorLocation();
-    FVector PlayerLocation(630.0, 540.0, 5.0f);
     TArray<FVector> path;
-
+    
+    NavSys->Build(); 
     UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetWorld(), flankerLocation, targetLocation, nullptr, newFilterClass);
-
     CleanUpNavArc(spawnedModifiers);
     NavSys->Build();
 
