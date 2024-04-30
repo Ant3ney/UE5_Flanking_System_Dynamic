@@ -21,7 +21,6 @@ UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform 
 
 void UAIFlankTo::CallbackFunction()
 {
-    // This is called when the callback in the function library method is triggered
     OnFinished.Broadcast();
 }
 
@@ -83,97 +82,27 @@ TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, 
 
 
 
-void UAIFlankTo::OnReachedPathPoint(FAIRequestID RequestID, const FPathFollowingResult& Result)
-{
-    UAIFlankTo* selfRefObj = this;
-    //selfRefObj->AddToRoot();
-    
+void UAIFlankTo::OnReachedPathPoint(FAIRequestID RequestID, const FPathFollowingResult& Result){
+    UAIFlankTo* selfRefObj = this;  
     int currentPath = selfRefObj->current;
     int maxPaths = selfRefObj->max;
-    selfRefObj->current = currentPath + 1;
-    // Implementation of your method
-
     TArray<FVector> path = selfRefObj->pathMem;
+    FVector& Point = selfRefObj->pathMem[0]; // Another tempermental line. Be carefull here
+    bool isLast = currentPath + 2 == maxPaths; // Not sure + 2 is required. If you make it + 1, the editor crashes.
+    bool currentPathEqualsLastPath = Point.Equals(path[path.Num() - 1], 1.0f);
+    selfRefObj->pathMem.RemoveAt(0); // This line canot be moved below the below line.
+    bool isPointValid = FlankingSystemUtilities::IsVectorInArray(Point, selfRefObj->pathMem); // This call is very tempermental. Carefull when modifing it.
+    selfRefObj->current = currentPath + 1;
 
-    if (!(selfRefObj->pathMem.Num() <= 0)) {
-        UE_LOG(LogTemp, Warning, TEXT("Last point obzerved: %s"), *path[path.Num() - 1].ToString());
+    if (selfRefObj == nullptr || selfRefObj->AIControllerMem == nullptr) return;
 
+    if (!isPointValid || path.Num() <= 0) {
+        selfRefObj->OnFinished.Broadcast();
+        return;
     }
     
-
-    if (selfRefObj->pathMem.Num() > 0 && selfRefObj->current <= selfRefObj->max) {
-        FVector& Point = selfRefObj->pathMem[0];
-        selfRefObj->pathMem.RemoveAt(0);
-        bool isLast = selfRefObj->current + 1 == selfRefObj->max;
-        bool currentPathEqualsLastPath = Point.Equals(path[path.Num() - 1], 1.0f);
-        bool isPointValid = FlankingSystemUtilities::IsVectorInArray(Point, selfRefObj->pathMem);
-
-        if (!isPointValid) { // Wants to move to bug point! Abort!
-
-            if(isLast){
-                selfRefObj->OnFinished.Broadcast();
-                return;
-            }
-            else {
-                // TODO: Look over this else block and ensure it will work when called.
-                int localIndex = 1;
-                while (!isLast && !isPointValid) {
-                    Point = selfRefObj->pathMem[localIndex];
-                    selfRefObj->pathMem.RemoveAt(0);
-                    currentPath = selfRefObj->current;
-                    selfRefObj->current = currentPath + 1;
-                    isLast = selfRefObj->current + 1 == selfRefObj->max;
-                    isPointValid = FlankingSystemUtilities::IsVectorInArray(Point, selfRefObj->pathMem);
-                    localIndex++;
-                }
-                if (isLast && !isPointValid) {
-                    selfRefObj->OnFinished.Broadcast();
-                    return;
-                }
-            }
-        }
-
-        UE_LOG(LogTemp, Warning, TEXT("Moving to <%f, %f, %f>"), Point.X, Point.Y, Point.Z);
-        if (selfRefObj !=  nullptr) {
-            if (selfRefObj->AIControllerMem != nullptr) {       
-                EPathFollowingRequestResult::Type MoveResult = selfRefObj->AIControllerMem->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
-
-                switch (MoveResult)
-                {
-                case EPathFollowingRequestResult::Type::Failed:
-                    UE_LOG(LogTemp, Warning, TEXT("MoveToLocation failed"));
-                    break;
-
-                case EPathFollowingRequestResult::Type::AlreadyAtGoal:
-                    UE_LOG(LogTemp, Warning, TEXT("MoveToLocation called but already at goal"));
-                    break;
-
-                case EPathFollowingRequestResult::Type::RequestSuccessful:
-                    UE_LOG(LogTemp, Warning, TEXT("MoveToLocation request successful"));
-                    break;
-
-                default:
-                    UE_LOG(LogTemp, Warning, TEXT("MoveToLocation returned an unexpected result"));
-                    break;
-                }
-            }
-        }
-        
-    }
-    else if(selfRefObj->pathMem.Num() <= 0) {
-        //OnFinished.Broadcast();
-
-        //selfRefObjStatic->OnFinished.Broadcast();
-        selfRefObj->OnFinished.Broadcast();
-
-    }
-
+    selfRefObj->AIControllerMem->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
 }
-
-//void UAIFlankTo::OnMoveCompletedMethod(FAIRequestID RequestID, const FPathFollowingResult& Result)
-//{
-//    // Implementation of your method
-//}
 
 UAIFlankTo* UAIFlankTo::GetSelf()
 {
@@ -181,9 +110,7 @@ UAIFlankTo* UAIFlankTo::GetSelf()
     if (selfRefObj == nullptr)
     {
         selfRefObj = NewObject<UAIFlankTo>();
-
-        //Preventing garbage collection makes game not crash for some reason.
-        selfRefObj->AddToRoot(); // Prevent garbage collection
+        selfRefObj->AddToRoot();
         UAIFlankTo::selfRef = selfRefObj;
         selfRefObj->current = 0;
     }
@@ -203,19 +130,12 @@ AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, U
     FRotator Rotation(0.0f, 0.0f, 0.0f);
     UWorld* World = GEngine->GetWorldFromContextObjectChecked(GEngine->GameViewport);
     FActorSpawnParameters SpawnParams;
-    FString typeString = type.ToString();
 
     AActor* spawnedModifier = nullptr;
     UClass* AFlankNavModifierActor0Class = AFlankNavModifierActor0::StaticClass();
     spawnedModifier = World->SpawnActor<AFlankNavModifierActor0>(AFlankNavModifierActor0Class, Location, Rotation, SpawnParams);
 
     return spawnedModifier;
-}
-
-AActor* UAIFlankTo::CreateFlankNavModifierActor() {
-    AActor* NewActor = NewObject<AActor>();
-
-    return NewActor;
 }
 
 TArray<AActor*> UAIFlankTo::SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type, UDataTable* DataTable, UAIFlankTo* instanceRef) {
@@ -267,7 +187,5 @@ void UAIFlankTo::CleanUpNavArc(TArray<AActor*> modifiersToDelete) {
         }
     }
 
-    // Clear the array after deleting the actors
     modifiersToDelete.Empty();
-
 }

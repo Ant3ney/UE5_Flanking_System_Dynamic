@@ -57,11 +57,7 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
         static TArray<FVector> GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform, UDataTable* DataTable = nullptr, UAIFlankTo* instanceRef = nullptr);
 
         DECLARE_DELEGATE_TwoParams(FOnMoveCompletedDelegate, FAIRequestID RequestID, const FPathFollowingResult& Result);
-        //void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result);
         FOnMoveCompletedDelegate OnMoveCompleted;
-
-        //UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
-        //void OnMoveCompletedMethod(FAIRequestID RequestID, const FPathFollowingResult& Result);
 
         void OnReachedPathPoint(FAIRequestID RequestID, const FPathFollowingResult& Result);
 
@@ -76,9 +72,6 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
 
         UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
         static void CleanUpNavArc(TArray<AActor*> modifiersToDelete);
-
-        UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
-        static AActor* CreateFlankNavModifierActor();
     
     private:
         void CallbackFunction();
