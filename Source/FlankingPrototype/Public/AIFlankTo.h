@@ -6,9 +6,13 @@
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "FlankingPrototype/Public/FlankingSystem.h"
 #include "FlankingPrototype/Public/FlankingSystemUtilities.h"
 #include "FlankingPrototype/Public/FlankQueryFilterHighCost.h"
+#include "FlankingPrototype/Public/CustomMath.h"
+#include "FlankingPrototype/Public/FlankNavModifierActor0.h"
+#include "AI/Navigation/NavQueryFilter.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
 #include "Engine/DataTable.h"
 #include "NavAreas/NavArea.h"
 #include "NavModifierComponent.h"
@@ -46,7 +50,7 @@ class FLANKINGPROTOTYPE_API UAIFlankTo : public UBlueprintAsyncActionBase
 
         static UAIFlankTo* selfRef;
     
-        UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
+        UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
         static UAIFlankTo* AIFlankTo(AAIController* AIController, const FTransform TargetTransform);
 
 

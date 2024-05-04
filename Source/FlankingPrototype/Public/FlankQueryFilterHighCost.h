@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "NavFilters/NavigationQueryFilter.h"
-#include "FlankingPrototype/Public/NavClassAccessor.h"
+#include "FlankingPrototype/NavClasses/FlankArea0.h"
 #include "NavigationSystem.h"
 #include "FlankQueryFilterHighCost.generated.h"
 
