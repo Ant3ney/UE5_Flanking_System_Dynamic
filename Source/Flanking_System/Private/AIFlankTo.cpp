@@ -16,6 +16,12 @@ UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform 
     TArray<FVector> path = GetFlankPathToLocation(AIController, TargetTransform);
     UAIFlankTo* MyAction = MoveAIAlongPathAndReturnCallbackPointer(AIController, path);
 
+    if (!MyAction)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to execute MoveAIAlongPathAndReturnCallbackPointer"));
+        return nullptr;
+    }
+
     return MyAction;
 }
 
@@ -26,11 +32,33 @@ UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* A
     }
 
     UAIFlankTo* self = NewObject<UAIFlankTo>();
+
+    if (!self)
+    {
+        // Ensure the UAIFlankTo instance was created successfully
+        UE_LOG(LogTemp, Error, TEXT("Failed to create UAIFlankTo instance"));
+        return nullptr;
+    }
+
     self->max = Path.Num();
     self->current = 0;
     self->max = Path.Num();
     self->AIControllerMem = AIController;
+
+    if (Path.Num() == 0)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Path is empty or not defined"));
+        return nullptr;
+    }
+
     self->pathMem = Path;
+
+    if (!self->pathMem.IsValidIndex(0))
+    {
+        UE_LOG(LogTemp, Error, TEXT("pathMem is undefined or has no elements"));
+        return nullptr;
+    }
+
     FVector& Point = self->pathMem[0];
 
     AIController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(self, &UAIFlankTo::OnReachedPathPoint);
