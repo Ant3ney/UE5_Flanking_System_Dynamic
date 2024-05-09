@@ -148,7 +148,7 @@ AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, U
 
     FVector Location(location.X, location.Y, 5);
     FRotator Rotation(0.0f, 0.0f, 0.0f);
-    UWorld* World = GEngine->GetWorldFromContextObjectChecked(GEngine->GameViewport);
+    UWorld* World = GEngine->GetWorldFromContextObjectChecked((const UObject*)GEngine->GameViewport);
     FActorSpawnParameters SpawnParams;
 
     AActor* spawnedModifier = nullptr;

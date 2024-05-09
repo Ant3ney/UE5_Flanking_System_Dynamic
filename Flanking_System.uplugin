@@ -22,8 +22,12 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"NavigationSystem"
+			],
+			"PlatformAllowList": [
+				"Win64"
 			]
 		}
+		
 	],
 	"WhitelistPlatforms": [ "Win64", "Mac", "Linux" ],
 	"BlacklistPlatforms": [ "Android", "IOS" ]
