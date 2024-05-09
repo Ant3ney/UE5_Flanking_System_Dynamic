@@ -72,7 +72,7 @@ class UAIFlankTo : public UBlueprintAsyncActionBase
         static TArray<AActor*> SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type, UDataTable* DataTable = nullptr, UAIFlankTo* instanceRef = nullptr);
 
         UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
-        static TArray<AActor*> SpawnNavArc(const FVector& PlayerLocation, UDataTable* DataTable = nullptr, UAIFlankTo* instanceRef = nullptr);
+        static TArray<AActor*> SpawnNavArc(const FTransform& PlayerLocation, UDataTable* DataTable = nullptr, UAIFlankTo* instanceRef = nullptr);
 
         UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
         static void CleanUpNavArc(TArray<AActor*> modifiersToDelete);

@@ -51,7 +51,7 @@ TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, 
     FVector targetLocation = TargetTransform.GetLocation();
     UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(AIController->GetWorld());
     TSubclassOf<UNavigationQueryFilter> newFilterClass = UFlankQueryFilterHighCost::StaticClass();
-    TArray<AActor*> spawnedModifiers = SpawnNavArc(targetLocation);
+    TArray<AActor*> spawnedModifiers = SpawnNavArc(TargetTransform);
     FVector flankerLocation = AIController->GetPawn()->GetActorLocation();
     TArray<FVector> path;
     
@@ -148,16 +148,16 @@ TArray<AActor*> UAIFlankTo::SpawnLine(const FVector& LocationA, const FVector& L
     return spawnedModifiers;
 }
 
-TArray<AActor*> UAIFlankTo::SpawnNavArc(const FVector& PlayerLocation, UDataTable* DataTable, UAIFlankTo* instanceRef) {
+TArray<AActor*> UAIFlankTo::SpawnNavArc(const FTransform& PlayerTransform, UDataTable* DataTable, UAIFlankTo* instanceRef) {
     if (!DataTable)
     {
         DataTable = NewObject<UDataTable>();
     }
-    //FVector PlayerLocation = PlayerTransform.GetLocation();
+    FVector PlayerLocation = PlayerTransform.GetLocation();
 
-    //FRotator Rotator = PlayerTransform.GetRotation().Rotator();
-    //float ZRotation = Rotator.Yaw;
-    TArray<FArcPoint> ArcPoints = UCustomMath::GetPointsOnArc(PlayerLocation, 6, 110, 900);
+    FRotator Rotator = PlayerTransform.GetRotation().Rotator();
+    float ZRotation = Rotator.Yaw;
+    TArray<FArcPoint> ArcPoints = UCustomMath::GetPointsOnArc(PlayerLocation, ZRotation, 110, 900);
     
     TArray<AActor*> spawnedModifiers;
 
