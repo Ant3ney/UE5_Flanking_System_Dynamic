@@ -7,9 +7,9 @@
 	"Category": "Other",
 	"CreatedBy": "Anthony Cavuoti",
 	"CreatedByURL": "https://anthonycavuoti.com",
-	"DocsURL": "",
+	"DocsURL": "https://flankingsystem.anthonycavuoti.com",
 	"MarketplaceURL": "",
-	"SupportURL": "",
+	"SupportURL": "https://flankingsystem.anthonycavuoti.com",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -27,8 +27,14 @@
 				"Win64"
 			]
 		}
-		
 	],
-	"WhitelistPlatforms": [ "Win64", "Mac", "Linux" ],
-	"BlacklistPlatforms": [ "Android", "IOS" ]
+	"WhitelistPlatforms": [
+		"Win64",
+		"Mac",
+		"Linux"
+	],
+	"BlacklistPlatforms": [
+		"Android",
+		"IOS"
+	]
 }
