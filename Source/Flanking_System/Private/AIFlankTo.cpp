@@ -146,7 +146,7 @@ AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, U
         DataTable = NewObject<UDataTable>();
     }
 
-    FVector Location(location.X, location.Y, 5);
+    FVector Location(location.X, location.Y, location.Z);
     FRotator Rotation(0.0f, 0.0f, 0.0f);
     UWorld* World = GEngine->GetWorldFromContextObjectChecked((const UObject*)GEngine->GameViewport);
     FActorSpawnParameters SpawnParams;
