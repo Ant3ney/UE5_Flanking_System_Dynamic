@@ -1,4 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// --------------------------------------------------------------------------------
+// Copyright (c) 2024 Anthony Cavuoti.
+// Flanking System Unreal Engine Plugin.
+// All rights reserved.
+// Unauthorized copying of this file, via any medium is strictly prohibited.
+// Proprietary and confidential.
+// --------------------------------------------------------------------------------
 
 
 #include "CustomMath.h"
