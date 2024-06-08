@@ -34,10 +34,7 @@ class UAIFlankTo : public UBlueprintAsyncActionBase
 {
     GENERATED_BODY()
 
-    public:
-        ~UAIFlankTo();
-
-
+public:
         UPROPERTY()
         int current;
 
@@ -46,9 +43,6 @@ class UAIFlankTo : public UBlueprintAsyncActionBase
 
         UPROPERTY()
         TArray<FVector> pathMem;
-
-        UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "MyCategory")
-        static UAIFlankTo* GetSelf();
 
         DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFinished);
     

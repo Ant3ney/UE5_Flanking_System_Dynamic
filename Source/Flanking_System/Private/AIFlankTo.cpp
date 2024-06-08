@@ -11,11 +11,6 @@
 #include "AIFlankTo.h"
 
 UAIFlankTo* UAIFlankTo::selfRef = nullptr;
-
-UAIFlankTo::~UAIFlankTo() {
-    UAIFlankTo* selfRefObj = GetSelf();
-    selfRefObj->current = 0;
-}
     
 
 UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform TargetTransform)
@@ -129,21 +124,6 @@ void UAIFlankTo::OnReachedPathPoint(FAIRequestID RequestID, const FPathFollowing
     }
     
     selfRefObj->AIControllerMem->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
-}
-
-UAIFlankTo* UAIFlankTo::GetSelf()
-{
-    UAIFlankTo* selfRefObj = UAIFlankTo::selfRef;
-    if (selfRefObj == nullptr)
-    {
-        selfRefObj = NewObject<UAIFlankTo>();
-        selfRefObj->AddToRoot();
-        UAIFlankTo::selfRef = selfRefObj;
-        selfRefObj->current = 0;
-    }
-
-   
-    return selfRefObj;
 }
 
 AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, UDataTable* DataTable, UAIFlankTo* instanceRef)
