@@ -10,8 +10,6 @@
 
 #include "AIFlankTo.h"
 
-UAIFlankTo* UAIFlankTo::selfRef = nullptr;
-    
 
 UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform TargetTransform)
 {
@@ -64,9 +62,9 @@ UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* A
     FVector& Point = self->pathMem[0];
 
     AIController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(self, &UAIFlankTo::OnReachedPathPoint);
-    
+
     self->AIControllerMem->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
-    if(self->pathMem.Num() > 0)
+    if (self->pathMem.Num() > 0)
         self->pathMem.RemoveAt(0);
 
     return self;
@@ -77,18 +75,24 @@ TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, 
     {
         DataTable = NewObject<UDataTable>();
     }
-
+    UE_LOG(LogTemp, Error, TEXT("Delete this log------------------------------"));
     FVector targetLocation = TargetTransform.GetLocation();
+    TArray<FVector> path;
+    if (AIController == nullptr) return path;
     UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(AIController->GetWorld());
     TSubclassOf<UNavigationQueryFilter> newFilterClass = UFlankQueryFilterHighCost::StaticClass();
-    TArray<AActor*> spawnedModifiers = SpawnNavArc(TargetTransform);
+    TArray<AActor*> spawnedModifiers = SpawnNavArc(TargetTransform, nullptr, AIController);
+    APawn* ControlledPawn = AIController->GetPawn();
+    if (ControlledPawn == nullptr) {
+        UE_LOG(LogTemp, Error, TEXT("AI controllers controlled pawn is null. Cannot flank!"));
+        return path;
+    }
     FVector flankerLocation = AIController->GetPawn()->GetActorLocation();
-    TArray<FVector> path;
-    
-    NavSys->Build(); 
-    UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetWorld(), flankerLocation, targetLocation, nullptr, newFilterClass);
-    CleanUpNavArc(spawnedModifiers);
+
     NavSys->Build();
+    UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetWorld(), flankerLocation, targetLocation, nullptr, newFilterClass);
+    //CleanUpNavArc(spawnedModifiers);
+    //NavSys->Build();
 
     if (NavPath && NavPath->IsValid())
     {
@@ -98,10 +102,8 @@ TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, 
     return path;
 }
 
-
-
-void UAIFlankTo::OnReachedPathPoint(FAIRequestID RequestID, const FPathFollowingResult& Result){
-    UAIFlankTo* selfRefObj = this;  
+void UAIFlankTo::OnReachedPathPoint(FAIRequestID RequestID, const FPathFollowingResult& Result) {
+    UAIFlankTo* selfRefObj = this;
     int currentPath = selfRefObj->current;
     int maxPaths = selfRefObj->max;
     TArray<FVector> path = selfRefObj->pathMem;
@@ -122,7 +124,7 @@ void UAIFlankTo::OnReachedPathPoint(FAIRequestID RequestID, const FPathFollowing
         selfRefObj->OnFinished.Broadcast();
         return;
     }
-    
+
     selfRefObj->AIControllerMem->MoveToLocation(Point, -1.0f, true, true, false, false, 0, true);
 }
 
@@ -140,8 +142,14 @@ AActor* UAIFlankTo::SpawnFlankNavModifierActorAt(FVector location, FText type, U
 
     AActor* spawnedModifier = nullptr;
     UClass* AFlankNavModifierActor0Class = AFlankNavModifierActor::StaticClass();
-    if(AFlankNavModifierActor0Class == nullptr) UE_LOG(LogTemp, Warning, TEXT("Faild to spawn nav mod actor"));
+    if (AFlankNavModifierActor0Class == nullptr) UE_LOG(LogTemp, Warning, TEXT("Faild to spawn nav mod actor"));
     spawnedModifier = World->SpawnActor<AFlankNavModifierActor>(AFlankNavModifierActor0Class, Location, Rotation, SpawnParams);
+
+    FVector CurrentScale = spawnedModifier->GetActorScale3D();
+
+    CurrentScale.Z *= 100;
+
+    spawnedModifier->SetActorScale3D(CurrentScale);
 
     return spawnedModifier;
 }
@@ -163,7 +171,25 @@ TArray<AActor*> UAIFlankTo::SpawnLine(const FVector& LocationA, const FVector& L
     return spawnedModifiers;
 }
 
-TArray<AActor*> UAIFlankTo::SpawnNavArc(const FTransform& PlayerTransform, UDataTable* DataTable, UAIFlankTo* instanceRef) {
+TArray<AActor*> UAIFlankTo::SpawnRow(TArray<FArcPoint> ArcPoints, const FVector PlayerLocation, const float ZLocation) {
+    TArray<AActor*> spawnedModifiers;
+
+    int i = 0;
+    for (FArcPoint spot : ArcPoints) {
+        FArcPoint OverideSpot = spot;
+        //UE_LOG(LogTemp, Error, TEXT("Entire line at at x: %f %f %f!"), OverideZ);
+        int centralizedIndex = UCustomMath::GetCentralizedIndex(i, ArcPoints.Num());
+        if (centralizedIndex < 0) centralizedIndex = 30;
+        if (centralizedIndex > 30) centralizedIndex = 30;
+        TArray<AActor*> newSpawnedModifiers = SpawnLine(PlayerLocation, spot.Point, FText::AsNumber(centralizedIndex));
+        spawnedModifiers.Append(newSpawnedModifiers);
+        i++;
+    }
+
+    return spawnedModifiers;
+}
+
+TArray<AActor*> UAIFlankTo::SpawnNavArc(const FTransform& PlayerTransform, UDataTable* DataTable, AAIController* AIControllerRef) {
     if (!DataTable)
     {
         DataTable = NewObject<UDataTable>();
@@ -172,18 +198,38 @@ TArray<AActor*> UAIFlankTo::SpawnNavArc(const FTransform& PlayerTransform, UData
 
     FRotator Rotator = PlayerTransform.GetRotation().Rotator();
     float ZRotation = Rotator.Yaw;
+
+    float ZDifference = 0;//= PlayerLocation.Z - 
+    int NumRows = 1;
+    int RowDifference = 100;
+    bool AIHigher = false;
+    UE_LOG(LogTemp, Error, TEXT("---------------------------------- Hello"));
+    if (AIControllerRef != nullptr) {  
+        APawn* ControlledPawn = AIControllerRef->GetPawn();
+        if (ControlledPawn != nullptr) {
+            FVector AILocation = ControlledPawn->GetActorLocation();
+            ZDifference = PlayerLocation.Z - AILocation.Z;
+            AIHigher = ZDifference < 0 ? true : false;
+            NumRows = AIHigher ? (ZDifference * (1)) / RowDifference : ZDifference / RowDifference;
+        }
+        else {
+            UE_LOG(LogTemp, Error, TEXT("ControlledPawn is null on AI Contoller that was passed into SpawnNavArc is nullptr. Not taking hight difference into account for flank path!"));
+        }
+    }
+    else {
+        UE_LOG(LogTemp, Error, TEXT("AI controller that was passed into SpawnNavArc is nullptr. Not taking hight difference into account for flank path!"));
+    }
+
     TArray<FArcPoint> ArcPoints = UCustomMath::GetPointsOnArc(PlayerLocation, ZRotation, 110, 900);
-    
     TArray<AActor*> spawnedModifiers;
 
-    int i = 0;
-    for (FArcPoint& spot : ArcPoints) {
-        int centralizedIndex = UCustomMath::GetCentralizedIndex(i, ArcPoints.Num());
-        if (centralizedIndex < 0) centralizedIndex = 30;
-        if (centralizedIndex > 30) centralizedIndex = 30;
-        TArray<AActor*> newSpawnedModifiers = SpawnLine(PlayerLocation, spot.Point, FText::AsNumber(centralizedIndex));
+    UE_LOG(LogTemp, Error, TEXT("Spawning %d rows!"), NumRows);
+
+    for (int i = 0; i < (1); i++) {
+        float OverideZ = PlayerLocation.Z + (RowDifference * i);
+        UE_LOG(LogTemp, Error, TEXT("Entire row at %f!"), OverideZ);
+        TArray<AActor*> newSpawnedModifiers = SpawnRow(ArcPoints, PlayerLocation, OverideZ);
         spawnedModifiers.Append(newSpawnedModifiers);
-        i++;
     }
 
     return spawnedModifiers;

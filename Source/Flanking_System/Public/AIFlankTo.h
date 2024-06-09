@@ -48,8 +48,6 @@ public:
     
         UPROPERTY(BlueprintAssignable)
         FOnFinished OnFinished;
-
-        static UAIFlankTo* selfRef;
     
         UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
         static UAIFlankTo* AIFlankTo(AAIController* AIController, const FTransform TargetTransform);
@@ -73,7 +71,10 @@ public:
         static TArray<AActor*> SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type, UDataTable* DataTable = nullptr, UAIFlankTo* instanceRef = nullptr);
 
         UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
-        static TArray<AActor*> SpawnNavArc(const FTransform& PlayerLocation, UDataTable* DataTable = nullptr, UAIFlankTo* instanceRef = nullptr);
+        static TArray<AActor*> SpawnRow(TArray<FArcPoint> ArcPoints, const FVector PlayerLocation, const float ZLocation);
+
+        UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
+        static TArray<AActor*> SpawnNavArc(const FTransform& PlayerLocation, UDataTable* DataTable = nullptr, AAIController* instanceRef = nullptr);
 
         UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
         static void CleanUpNavArc(TArray<AActor*> modifiersToDelete);
@@ -84,4 +85,5 @@ public:
         AAIController* AIControllerMem;
 
         TArray<AActor*> NavModifierActors;
+
 };
