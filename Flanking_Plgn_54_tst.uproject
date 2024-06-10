@@ -17,6 +17,11 @@
 			"TargetAllowList": [
 				"Editor"
 			]
+		},
+		{
+			"Name": "Flanking_System",
+			"Enabled": false,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/47c5e3736b334025ba623b9709ff0c0a"
 		}
 	]
 }
