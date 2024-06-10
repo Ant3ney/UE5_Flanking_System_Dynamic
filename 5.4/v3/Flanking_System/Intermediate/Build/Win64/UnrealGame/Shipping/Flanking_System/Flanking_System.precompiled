@@ -1,0 +1,14 @@
+{
+	"OutputFiles": [
+		"..\\..\\..\\x64\\UnrealGame\\Shipping\\Flanking_System\\Module.Flanking_System.cpp.obj",
+		"..\\..\\..\\x64\\UnrealGame\\Shipping\\Flanking_System\\AIFlankTo.cpp.obj",
+		"..\\..\\..\\x64\\UnrealGame\\Shipping\\Flanking_System\\CustomMath.cpp.obj",
+		"..\\..\\..\\x64\\UnrealGame\\Shipping\\Flanking_System\\FlankArea.cpp.obj",
+		"..\\..\\..\\x64\\UnrealGame\\Shipping\\Flanking_System\\FlankingSystemUtilities.cpp.obj",
+		"..\\..\\..\\x64\\UnrealGame\\Shipping\\Flanking_System\\Flanking_System.cpp.obj",
+		"..\\..\\..\\x64\\UnrealGame\\Shipping\\Flanking_System\\Flanking_SystemBPLibrary.cpp.obj",
+		"..\\..\\..\\x64\\UnrealGame\\Shipping\\Flanking_System\\FlankNavModifierActor.cpp.obj",
+		"..\\..\\..\\x64\\UnrealGame\\Shipping\\Flanking_System\\FlankQueryFilter.cpp.obj",
+		"..\\..\\..\\x64\\UnrealGame\\Shipping\\Flanking_System\\FlankQueryFilterHighCost.cpp.obj"
+	]
+}

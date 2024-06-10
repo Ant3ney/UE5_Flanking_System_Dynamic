@@ -1,0 +1,30 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Flanking_System",
+	"Description": "Add node \"AIFlankTo\" to your Unreal Engine 5 project. This Node takes in an AI Controller and a target location then makes that AI Controller move to a location in a flanking / indirect path.This package also comes with a few helper functions that AIFlankTo uses under the hood so that you can modify the nodes functionality to your liking.",
+	"Category": "Other",
+	"CreatedBy": "Anthony Cavuoti",
+	"CreatedByURL": "https://anthonycavuoti.com",
+	"DocsURL": "https://flankingsystem.anthonycavuoti.com",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/47c5e3736b334025ba623b9709ff0c0a",
+	"SupportURL": "https://flankingsystem.anthonycavuoti.com",
+	"EngineVersion": "5.2.0",
+	"CanContainContent": true,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "Flanking_System",
+			"Type": "Runtime",
+			"LoadingPhase": "PreLoadingScreen",
+			"PlatformAllowList": [
+				"Win64"
+			],
+			"AdditionalDependencies": [
+				"Engine",
+				"NavigationSystem"
+			]
+		}
+	]
+}
