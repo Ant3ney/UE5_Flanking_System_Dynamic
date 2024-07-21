@@ -13,7 +13,7 @@
 #include "CustomMath.generated.h"
 
 /**
- * 
+ *
  */
 
 USTRUCT(BlueprintType)
@@ -21,11 +21,11 @@ struct FArcPoint
 {
 	GENERATED_BODY()
 
-		UPROPERTY(BlueprintReadOnly, Category = "Custom|Math")
-		FVector Point;
+	UPROPERTY(BlueprintReadOnly, Category = "Custom|Math")
+	FVector Point;
 
-		UPROPERTY(BlueprintReadOnly, Category = "Custom|Math")
-		int32 IndexFromCenter;
+	UPROPERTY(BlueprintReadOnly, Category = "Custom|Math")
+	int32 IndexFromCenter;
 };
 
 UCLASS()

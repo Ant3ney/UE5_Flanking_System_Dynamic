@@ -46,7 +46,7 @@ TArray<FArcPoint> UCustomMath::GetPointsOnArc(const FVector& PlayerLocation, flo
     float ArcLength = Magnitude * TotalArcAngleRadians;
     //int32 NumPoints = FMath::CeilToInt(ArcLength / 50.0f);
     int32 NumPoints = 60;
-    
+
     for (int32 i = 0; i <= NumPoints; ++i)
     {
         float Angle = RotationRadians + (TotalArcAngleRadians * i) / NumPoints;
