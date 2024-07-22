@@ -13,9 +13,10 @@
 UAIFlankTo* UAIFlankTo::selfRef = nullptr;
 
 
-UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform TargetTransform)
+UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform TargetTransform, FFlankSettings Settings)
 {
-    TArray<FVector> path = GetFlankPathToLocation(AIController, TargetTransform);
+    Settings.AIController = AIController;
+    TArray<FVector> path = GetFlankPathToLocation(AIController, TargetTransform, Settings);
     UAIFlankTo* MyAction = MoveAIAlongPathAndReturnCallbackPointer(AIController, path);
 
     if (!MyAction)
@@ -28,11 +29,6 @@ UAIFlankTo* UAIFlankTo::AIFlankTo(AAIController* AIController, const FTransform 
 }
 
 UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* AIController, const TArray<FVector> Path, UDataTable* DataTable, UAIFlankTo* instanceRef) {
-    if (!DataTable)
-    {
-        DataTable = NewObject<UDataTable>();
-    }
-
     UAIFlankTo* self = NewObject<UAIFlankTo>();
 
     if (!self)
@@ -72,18 +68,13 @@ UAIFlankTo* UAIFlankTo::MoveAIAlongPathAndReturnCallbackPointer(AAIController* A
     return self;
 }
 
-TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform, UDataTable* DataTable, UAIFlankTo* instanceRef) {
-    if (!DataTable)
-    {
-        DataTable = NewObject<UDataTable>();
-    }
-
+TArray<FVector> UAIFlankTo::GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform, FFlankSettings Settings) {
     FVector targetLocation = TargetTransform.GetLocation();
     TArray<FVector> path;
     if (AIController == nullptr) return path;
     UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(AIController->GetWorld());
     TSubclassOf<UNavigationQueryFilter> newFilterClass = UFlankQueryFilterHighCost::StaticClass();
-    TArray<AActor*> spawnedModifiers = SpawnNavArc(TargetTransform);
+    TArray<AActor*> spawnedModifiers = SpawnNavArc(TargetTransform, Settings);
     APawn* ControlledPawn = AIController->GetPawn();
     if (ControlledPawn == nullptr) {
         UE_LOG(LogTemp, Error, TEXT("AI controllers controlled pawn is null. Cannot flank!"));
@@ -174,16 +165,25 @@ TArray<AActor*> UAIFlankTo::SpawnLine(const FVector& LocationA, const FVector& L
     return spawnedModifiers;
 }
 
-TArray<AActor*> UAIFlankTo::SpawnNavArc(const FTransform& PlayerTransform, UDataTable* DataTable, UAIFlankTo* instanceRef) {
-    if (!DataTable)
-    {
-        DataTable = NewObject<UDataTable>();
-    }
+TArray<AActor*> UAIFlankTo::SpawnNavArc(const FTransform& PlayerTransform, FFlankSettings Settings) {
     FVector PlayerLocation = PlayerTransform.GetLocation();
 
     FRotator Rotator = PlayerTransform.GetRotation().Rotator();
-    float ZRotation = Rotator.Yaw;
-    TArray<FArcPoint> ArcPoints = UCustomMath::GetPointsOnArc(PlayerLocation, ZRotation, 110, 900);
+    float ZRotation = Rotator.Yaw + 55;
+
+    AAIController* AIController = Settings.AIController;
+    float Magnitude = 900;
+
+    
+    if (AIController != nullptr && Settings.StartingPoint == EFlankStartingPoint::FlankersCurrentPosition) {
+        if (AIController->GetPawn() != nullptr) {
+            FVector FlankerLocation = AIController->GetPawn()->GetActorLocation();
+            Magnitude = UCustomMath::CalculateDistanceBetweenPoints(PlayerLocation, FlankerLocation);
+            Magnitude = abs(Magnitude);
+        }
+    }
+    
+    TArray<FArcPoint> ArcPoints = UCustomMath::GetPointsOnArc(PlayerLocation, ZRotation, 110, Magnitude);
 
     TArray<AActor*> spawnedModifiers;
 

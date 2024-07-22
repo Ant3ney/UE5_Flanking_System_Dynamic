@@ -29,6 +29,24 @@
 /**
  *
  */
+
+UENUM(BlueprintType)
+enum class EFlankStartingPoint : uint8 {
+    ClassicStartingPoint	UMETA(DisplayName = "Classic Starting Point"),
+    FlankersCurrentPosition	UMETA(DisplayName = "Flanker's Current Position")
+};
+
+USTRUCT(BlueprintType)
+struct FFlankSettings {
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flanking")
+    EFlankStartingPoint StartingPoint = EFlankStartingPoint::ClassicStartingPoint;
+
+    UPROPERTY()
+    AAIController* AIController;
+};
+
 UCLASS()
 class UAIFlankTo : public UBlueprintAsyncActionBase
 {
@@ -52,14 +70,14 @@ public:
     static UAIFlankTo* selfRef;
 
     UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
-    static UAIFlankTo* AIFlankTo(AAIController* AIController, const FTransform TargetTransform);
+    static UAIFlankTo* AIFlankTo(AAIController* AIController, const FTransform TargetTransform, FFlankSettings Settings = FFlankSettings());
 
 
     UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "FlankingSystem")
     static UAIFlankTo* MoveAIAlongPathAndReturnCallbackPointer(AAIController* AIController, const TArray<FVector> Path, UDataTable* DataTable = nullptr, UAIFlankTo* instanceRef = nullptr);
 
     UFUNCTION(BlueprintCallable, Category = "AI")
-    static TArray<FVector> GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform, UDataTable* DataTable = nullptr, UAIFlankTo* instanceRef = nullptr);
+    static TArray<FVector> GetFlankPathToLocation(AAIController* AIController, const FTransform TargetTransform, FFlankSettings Settings = FFlankSettings());
 
     DECLARE_DELEGATE_TwoParams(FOnMoveCompletedDelegate, FAIRequestID RequestID, const FPathFollowingResult& Result);
     FOnMoveCompletedDelegate OnMoveCompleted;
@@ -73,7 +91,7 @@ public:
     static TArray<AActor*> SpawnLine(const FVector& LocationA, const FVector& LocationB, FText type, UDataTable* DataTable = nullptr, UAIFlankTo* instanceRef = nullptr);
 
     UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
-    static TArray<AActor*> SpawnNavArc(const FTransform& PlayerLocation, UDataTable* DataTable = nullptr, UAIFlankTo* instanceRef = nullptr);
+    static TArray<AActor*> SpawnNavArc(const FTransform& PlayerLocation, FFlankSettings Settings = FFlankSettings());
 
     UFUNCTION(BlueprintCallable, Category = "FlankingSystem")
     static void CleanUpNavArc(TArray<AActor*> modifiersToDelete);
