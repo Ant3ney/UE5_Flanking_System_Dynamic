@@ -208,6 +208,5 @@ void UAIFlankTo::CleanUpNavArc(TArray<AActor*> modifiersToDelete) {
             modifier->Destroy();
         }
     }
-
     modifiersToDelete.Empty();
 }
